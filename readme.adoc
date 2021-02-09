@@ -1,0 +1,66 @@
+
+= geriatric_ice_vakib
+
+== Purpose
+
+Prune jars that our CI system creates.
+
+== License
+
+Mozilla Public license v2.0
+
+== Run
+
+java -jar giv-1.0.jar [[ path ]]
+
+== Name
+
+Vakib is a latinization of the Tzotzil word for numeral 6.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
