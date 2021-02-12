@@ -18,7 +18,7 @@
 		geriatric_ice_vakib
 		</artifactId>
 	<version>
-		0.0
+		0.0_alpha_0.0
 		</version>
 	<packaging>
 		jar
@@ -263,7 +263,7 @@
 								true
 								</addClasspath>
 							<mainClass>
-								com.beyondrelations.fs.giv
+								com.beyondrelations.fs.giv.Givakib
 								</mainClass>
 							</manifest>
 						<manifestEntries>
@@ -303,7 +303,7 @@
 							-classpath
 							</argument>
 						<argument>
-							com.beyondrelations.fs.giv
+							com.beyondrelations.fs.giv.Givakib
 							</argument>
 					</arguments>
 					</configuration>
