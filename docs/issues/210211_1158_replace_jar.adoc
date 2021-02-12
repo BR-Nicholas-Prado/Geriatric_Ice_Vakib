@@ -1,0 +1,44 @@
+
+= issue 210211_1158
+
+== Trim deprecated jars
+
+* assignee : Nicholas Prado
+* status : in progress
+* priority : medium
+
+We produce lots of jars for spl, as not all developers use an ide to test with. These jars are pretty heavy. The prevailing human interventions involve either deleting everything (inside, as the folders matter) or replacing the jars with tombstones, by hand. We would like to trim these before they fill up the disk, and without losing history and without demanding much effort.
+
+Provide a mechanism that can transform the jars - except the latest - into timestamped text file tombstones of roughly the same name. Format should be [[ yyyymmdd ]]_workfloLaumcher_[[ parentFolder ]]-[[ branchNumber ]].txt
+
+The current jar name format is workfloLauncher-auto-[[ parentFolder ]]-[[ branchNumber ]]-0.3.00.RELEASE.jar . The current folder format is auto-[[ parentFolder ]]-[[ branchNumber ]]-0.3.00.RELEASE . It is possible (but unlikely) for the folder to have other files, or even jars. Leave these alone.
+
+////
+== comments
+
+=== yyMMdd hhMM zzz
+
+comment author : 
+
+comment_here
+////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
