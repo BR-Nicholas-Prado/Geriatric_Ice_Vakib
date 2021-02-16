@@ -78,15 +78,17 @@ public class Givakib
 			Arrays.sort( allFilesInRoot,
 					// comparator
 					( left, right ) -> {
-						String leftPath = left.toString();
-						String rightPath = right.toString();
+						Path leftP = (Path)left;
+						Path rightP = (Path)right;
+						String leftPath = leftP.getFileName().toString();
+						String rightPath = rightP.getFileName().toString();
 						if ( ! leftPath.contains( "auto" ) )
-							// FIX || ! leftPath.contains( "RELEASE" ) ) or unused or 0300 or 0200 or 0201
+							// IMPROVE || ! leftPath.contains( "RELEASE" ) ) or unused or 0300 or 0200 or 0201
 							return leftPath.compareTo( rightPath );
 						// else treat as our format, for numeric, not lexical sorting
 						String[] leftPieces = leftPath.split( "-" );
 						String[] rightPieces = rightPath.split( "-" );
-						final int versionInd = 3;
+						final int versionInd = 2;
 						int leftVersion = Integer.parseInt( leftPieces[ versionInd ] );
 						int rightVersion = Integer.parseInt( rightPieces[ versionInd ] );
 						if ( leftVersion == rightVersion )
@@ -108,7 +110,7 @@ public class Givakib
 				if ( Files.isDirectory( path ) )
 				{
 		System.out.println( "entering "+ path.toString() );
-		// FIX uncomment replaceJarsWithTombstonesIn( path, carver );
+					replaceJarsWithTombstonesIn( path, carver );
 				}
 			}
 		}
@@ -148,10 +150,6 @@ public class Givakib
 			if ( ! target.getFileName().toString().endsWith( "jar" ) )
 				return;
 		System.out.println( "using it" );
-			/*
-			BasicFileAttributeView properties = Files.getFileAttributeView​(
-					target, BasicFileAttributeView.class );
-			*/
 			try {
 				FileTime creationTime = (FileTime)Files.getAttribute( target, "basic:creationTime" );
 				FileTime modifiedTime = (FileTime)Files.getAttribute( target, "basic:lastModifiedTime" );
