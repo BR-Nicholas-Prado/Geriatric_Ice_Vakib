@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.nio.file.ProviderNotFoundException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -74,6 +75,27 @@ public class Givakib
 		{
 			Stream<Path> allContents = Files.list( workingRoot );
 			Object[] allFilesInRoot = allContents.toArray();
+			Arrays.sort( allFilesInRoot,
+					// comparator
+					( left, right ) -> {
+						String leftPath = left.toString();
+						String rightPath = right.toString();
+						if ( ! leftPath.contains( "auto" ) )
+							// FIX || ! leftPath.contains( "RELEASE" ) ) or unused or 0300 or 0200 or 0201
+							return leftPath.compareTo( rightPath );
+						// else treat as our format, for numeric, not lexical sorting
+						String[] leftPieces = leftPath.split( "-" );
+						String[] rightPieces = rightPath.split( "-" );
+						final int versionInd = 3;
+						int leftVersion = Integer.parseInt( leftPieces[ versionInd ] );
+						int rightVersion = Integer.parseInt( rightPieces[ versionInd ] );
+						if ( leftVersion == rightVersion )
+							return 0;
+						else if ( leftVersion < rightVersion )
+							return -1;
+						else
+							return 1;
+				} );
 			Sculptor carver = new Sculptor();
 			int ind = 0, lim = allFilesInRoot.length -1; // leave the last one alone
 			for ( Object buh : allFilesInRoot )
@@ -86,7 +108,7 @@ public class Givakib
 				if ( Files.isDirectory( path ) )
 				{
 		System.out.println( "entering "+ path.toString() );
-					replaceJarsWithTombstonesIn( path, carver );
+		// FIX uncomment replaceJarsWithTombstonesIn( path, carver );
 				}
 			}
 		}
