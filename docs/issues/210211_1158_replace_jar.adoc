@@ -4,7 +4,7 @@
 == Trim deprecated jars
 
 * assignee : Nicholas Prado
-* status : in progress
+* status : closed
 * priority : medium
 
 We produce lots of jars for spl, as not all developers use an ide to test with. These jars are pretty heavy. The prevailing human interventions involve either deleting everything (inside, as the folders matter) or replacing the jars with tombstones, by hand. We would like to trim these before they fill up the disk, and without losing history and without demanding much effort.

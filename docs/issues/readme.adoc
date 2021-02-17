@@ -3,30 +3,6 @@
 
 This folder exists to track issues and comments related to geriatric_ice_vakib. This is recorded internal to the repository, rather than through a particular hosting feature.
 
-issue schema -
-
-`
-# issue yyMMdd_hhmm
-
-
-assignee : value
-
-title : value
-
-status : value
-
-priority : value
-
-desc : multiline
-
-labels : list
-
-
-comment author : value
-
-comment : multiline
-`
-
 
 
 

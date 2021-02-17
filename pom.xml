@@ -18,7 +18,7 @@
 		geriatric_ice_vakib
 		</artifactId>
 	<version>
-		0.0_alpha_0.0
+		1.0
 		</version>
 	<packaging>
 		jar
@@ -155,6 +155,7 @@
 					</executions>
 				</plugin>
 			<plugin>
+				<!-- insist on a minimal version of maven -->
 				<groupId>
 					org.apache.maven.plugins
 					</groupId>
@@ -178,7 +179,7 @@
 							<rules>
 								<requireMavenVersion>
 									<version>
-										3.3.9
+										3.5
 										</version>
 									</requireMavenVersion>
 								</rules>
@@ -187,7 +188,7 @@
 					</executions>
 				</plugin>
 			<plugin>
-				<!-- compile with java 8 compliance -->
+				<!-- compile java -->
 				<groupId>
 					org.apache.maven.plugins
 					</groupId>
@@ -197,6 +198,21 @@
 				<version>
 					3.8.1
 					</version>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>
+								info.picocli
+								</groupId>
+							<artifactId>
+								picocli-codegen
+								</artifactId>
+							<version>
+								4.6.1
+								</version>
+							</path>
+						</annotationProcessorPaths>
+					</configuration>
 				<executions>
 					<execution>
 						<id>
@@ -230,14 +246,6 @@
 							<release>
 								11
 								</release>
-							<multiReleaseOutput>
-								true
-								</multiReleaseOutput>
-							<compileSourceRoots>
-								<compileSourceRoot>
-									${basedir}/src/main/java9
-									</compileSourceRoot>
-								</compileSourceRoots>
 							</configuration>
 						</execution>
 					</executions>
@@ -270,12 +278,9 @@
 							<mode>
 								development
 								</mode>
-							<st-version>
+							<giv-version>
 								${project.version}
-								</st-version>
-							<Multi-Release>
-								true
-								</Multi-Release>
+								</giv-version>
 							</manifestEntries>
 						</archive>
 					</configuration>
@@ -317,21 +322,21 @@
 		geriatric_ice_vakib
 		</name>
 	<description>
-		xxxx
+		Remove stale jars from bR hierarchy
 		</description>
 	<url>
-		xxxxx
+		https://github.com/BR-Nicholas-Prado/Geriatric_Ice_Vakib
 		</url>
 	<inceptionYear>
-		20xxxx
+		2021
 		</inceptionYear>
 	<licenses>
 		<license>
 			<name>
-				xxxx
+				Mozilla Public v2.0
 				</name>
 			<url>
-				xxxx
+				https://www.mozilla.org/en-US/MPL/2.0
 				</url>
 			</license>
 		</licenses>
@@ -347,7 +352,7 @@
 				Nicholas Prado
 				</name>
 			<email>
-				nmprado@nzen.ws
+				nick@getworkflo.com
 				</email>
 			<roles>
 				<role>
@@ -367,13 +372,13 @@
 		-->
 	<scm>
 		<connection>
-			scm:git:https://github.com/Nzen/xxxxxxxxxx.git
+			scm:git:https://github.com/BR-Nicholas-Prado/Geriatric_Ice_Vakib
 			</connection>
 		<developerConnection>
-			scm:git:https://github.com/Nzen/xxxxxxxxxx.git
+			scm:git:https://github.com/BR-Nicholas-Prado/Geriatric_Ice_Vakib
 			</developerConnection>
 		<url>
-			https://github.com/Nzen/xxxxxxxxxx
+			https://github.com/BR-Nicholas-Prado/Geriatric_Ice_Vakib
 			</url>
 		</scm>
 	<!--
