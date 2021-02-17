@@ -24,6 +24,39 @@
 		jar
 		</packaging>
 	<dependencies>
+		<dependency>
+			<groupId>
+				info.picocli
+				</groupId>
+			<artifactId>
+				picocli
+				</artifactId>
+			<version>
+				4.6.1
+				</version>
+			</dependency>
+		<dependency>
+			<groupId>
+				org.slf4j
+				</groupId>
+			<artifactId>
+				slf4j-api
+				</artifactId>
+			<version>
+				1.7.25
+				</version>
+			</dependency>
+		<dependency>
+			<groupId>
+				org.slf4j
+				</groupId>
+			<artifactId>
+				slf4j-simple
+				</artifactId>
+			<version>
+				1.7.25
+				</version>
+			</dependency>
 		<!--
 		<dependency>
 			<groupId>
@@ -271,7 +304,7 @@
 								true
 								</addClasspath>
 							<mainClass>
-								com.beyondrelations.fs.giv.Givakib
+								com.beyondrelations.fs.giv.InitGiv
 								</mainClass>
 							</manifest>
 						<manifestEntries>
@@ -286,7 +319,7 @@
 					</configuration>
 				</plugin>
 			<plugin>
-	    		<!-- maven is able to start splaintime -->
+				<!-- maven is able to start jar -->
 				<groupId>
 					org.codehaus.mojo
 					</groupId>
@@ -308,9 +341,9 @@
 							-classpath
 							</argument>
 						<argument>
-							com.beyondrelations.fs.giv.Givakib
+							com.beyondrelations.fs.giv.InitGiv
 							</argument>
-					</arguments>
+						</arguments>
 					</configuration>
 				</plugin>
 			</plugins>

@@ -11,7 +11,10 @@ repositories {
 }
 
 dependencies {
-	// implementation 'org.slf4j:slf4j-api:1.7.25'
+	annotationProcessor 'info.picocli:picocli-codegen:4.6.1'
+	implementation 'info.picocli:picocli:4.6.1'
+	implementation 'org.slf4j:slf4j-api:1.7.25'
+	implementation 'org.slf4j:slf4j-simple:1.7.25'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
 }
@@ -29,21 +32,22 @@ sourceCompatibility = '1.8'
 
 jar {
 	manifest.attributes(
-		'Main-Class' : 'com.beyondrelations.fs.giv.Givakib'
+		'Main-Class' : 'com.beyondrelations.fs.giv.InitGiv'
 	)
+	// embed dependencies directly in our jar
 	from {
 		configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 	}
 }
 
 run {
-	mainClassName = 'com.beyondrelations.fs.giv.Givakib'
+	mainClassName = 'com.beyondrelations.fs.giv.InitGiv'
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
-            from(components.java)
+            from( components.java )
         }
     }
 }

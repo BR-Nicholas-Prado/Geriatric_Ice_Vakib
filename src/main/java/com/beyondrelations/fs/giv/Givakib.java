@@ -21,10 +21,15 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Givakib
 {
 
+	private final Logger log = LoggerFactory.getLogger( Givakib.class );
 	private FileSystem os;
+	private boolean verbose = false;
 
 
 	public static void main(
@@ -109,7 +114,8 @@ public class Givakib
 				Path path = (Path)buh;
 				if ( Files.isDirectory( path ) )
 				{
-		System.out.println( "entering "+ path.toString() );
+					if ( verbose )
+						log.info( "entering "+ path.toString() );
 					replaceJarsWithTombstonesIn( path, carver );
 				}
 			}
@@ -138,6 +144,13 @@ public class Givakib
 	}
 
 
+	public void setVerbose(
+			boolean beThatWay
+	) {
+		verbose = beThatWay;
+	}
+
+
 	/** because it carves tombstones */
 	private class Sculptor
 			implements Consumer<Path>
@@ -146,10 +159,12 @@ public class Givakib
 		public void accept(
 				Path target
 		) {
-		System.out.println( "handed "+ target.toString() );
+			if ( verbose )
+				log.info( "handed "+ target.toString() );
 			if ( ! target.getFileName().toString().endsWith( "jar" ) )
 				return;
-		System.out.println( "using it" );
+			if ( verbose )
+				log.info( "using it" );
 			try {
 				FileTime creationTime = (FileTime)Files.getAttribute( target, "basic:creationTime" );
 				FileTime modifiedTime = (FileTime)Files.getAttribute( target, "basic:lastModifiedTime" );
@@ -159,9 +174,11 @@ public class Givakib
 				LocalDate earlierD = createdD.compareTo( modifiedD ) < 1 ? createdD : modifiedD;
 				String tombstoneName = earlierD.toString() +"_"+ target.getFileName().toString()
 						.replace( "jar", "txt" );
-		System.out.println( "creating "+ tombstoneName );
-					Path intendedTombstone = target.getParent().resolve( os.getPath( tombstoneName ) );
-		System.out.println( "position "+ intendedTombstone.toString() );
+				if ( verbose )
+					log.info( "creating "+ tombstoneName );
+				Path intendedTombstone = target.getParent().resolve( os.getPath( tombstoneName ) );
+				if ( verbose )
+					log.info( "position "+ intendedTombstone.toString() );
 				Path ignored = Files.createFile( intendedTombstone );
 				Files.delete( target );
 			}
@@ -172,7 +189,6 @@ public class Givakib
 				return;
 			}
 		}
-
 	}
 
 

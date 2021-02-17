@@ -24,4 +24,5 @@
 
 * Replaces jars in specified root (or enclosing directory, when none specified) with text files that include the date in the file name.
 * Adds a module descriptor
+* Logs via slf4j simple
 
