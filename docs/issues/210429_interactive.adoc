@@ -4,7 +4,7 @@
 == Interactively choose which to remove
 
 * assignee : Nicholas
-* status : to do
+* status : in progress
 * priority : medium
 
 While removing everything except the last was appropriate before, some time has passed, and I'd like to keep some of them (some in the center, some at the end). While I could provide some mechanism to choose via the program arguments (after completing i210216), it would just be simpler to provide an interactive session for pruning the existing jars.

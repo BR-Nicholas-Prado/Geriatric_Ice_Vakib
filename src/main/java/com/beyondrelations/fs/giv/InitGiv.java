@@ -33,18 +33,23 @@ public class InitGiv
 			description = "Directory to process.")
     private String workingRoot;
 
+	@Option(
+			names = { "-i", "--interactive" },
+			description = "interactive mode.")
+    private boolean interactive;
+
 
 	@Option(
 			names = { "-h", "--help" },
-			usageHelp = true,
+			usageHelp = true, // ¶ picocli signal to provide help
 			description = "Explain arguments.")
     private boolean picocliHandlesHelp;
 
 
 	@Option(
-			names = { "-V", "--Verbose" },
-			versionHelp = true,
-			description = "Explain arguments.")
+			names = { "-V", "--Version" },
+			versionHelp = true, // ¶ this tells picocli to handle version
+			description = "Announce version.")
     private boolean picocliHandlesVersion;
 
 
@@ -53,7 +58,10 @@ public class InitGiv
 		try {
 			Givakib giv = new Givakib( FileSystems.getDefault() );
 			giv.setVerbose( verbose );
-			giv.replaceJarsWithTombstonesIn( workingRoot );
+			if ( interactive )
+				giv.interactivelyReplaceWithTombstonesIn( workingRoot );
+			else
+				giv.replaceJarsWithTombstonesIn( workingRoot );
 		}
 		catch ( IllegalArgumentException | SecurityException
 				| FileSystemNotFoundException | ProviderNotFoundException any )

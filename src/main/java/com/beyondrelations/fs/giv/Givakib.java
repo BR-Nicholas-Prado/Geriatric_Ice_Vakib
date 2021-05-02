@@ -1,24 +1,25 @@
 
 package com.beyondrelations.fs.giv;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.ProviderNotFoundException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -31,19 +32,48 @@ public class Givakib
 	private FileSystem os;
 	private boolean verbose = false;
 
+	private enum Command
+	{
+		HIDE_FOLDERS( "h" ),
+		QUIT( "q" ),
+		TOMBSTONE_FOLDERS( "t" ),
+		UI_CHANGE_COLUMN_COUNT( "c" ),
+		UI_CHANGE_SCREEN_CHAR_WIDTH( "w" ),
+		UNKNOWN( "" );
 
-	public static void main(
-			String[] args
-	) {
-		try {
-			Givakib giv = new Givakib( FileSystems.getDefault() );
-			giv.replaceJarsWithTombstonesIn( args.length > 0
-					? args[ 0 ] : "" );
+		private String flag = "";
+
+		private Command(
+				String character
+		) {
+			flag = character;
 		}
-		catch ( IllegalArgumentException | SecurityException
-				| FileSystemNotFoundException | ProviderNotFoundException any )
-		{
-			any.printStackTrace();
+		public String getFlag(
+		) {
+			return flag;
+		}
+		public static Command fromFlag(
+				String input
+		) {
+			if ( input == null || input.isEmpty() )
+				return UNKNOWN;
+			for ( Command candidate : values() )
+				if ( candidate.flag.equals( input ) )
+					return candidate;
+			return UNKNOWN;
+		}
+	}
+
+	private class UiResponse
+	{
+		Command command;
+		Collection<Integer> values;
+
+		UiResponse(
+				Command doWhat, Collection<Integer> info
+		) {
+			command = doWhat;
+			values = info;
 		}
 	}
 
@@ -54,6 +84,298 @@ public class Givakib
 		if ( ls == null )
 			throw new RuntimeException( "null filesystem is null" );
 		os = ls;
+	}
+
+
+	public void interactivelyReplaceWithTombstonesIn(
+			String descriptionOfPath
+	) {
+		final String here = "g.irwti "; // ask perhaps just let logger handle it
+		if ( descriptionOfPath.isEmpty() )
+			descriptionOfPath = ".";
+		try {
+			Set<Path> relevantFolders = immediateChildrenWithJar( os.getPath( descriptionOfPath ) );
+			Map<Integer, Path> id_folder = new HashMap<>();
+			int columns = 1;
+			int screenCharacterWidth = 100;
+			boolean askedToQuit = false;
+			boolean rebuildMap = true;
+			Scanner input = new Scanner( System.in );
+			System.out.println( "[[ Command ]] [[ folder ids ]]\n:Options:" );
+			for ( Command inputOption : Command.values() )
+			{
+				System.out.println( inputOption.getFlag() +" "+ inputOption.name() );
+			}
+			System.out.println();
+			while ( ! askedToQuit )
+			{
+				if ( rebuildMap )
+				{
+					id_folder.clear();
+					int ind = 1;
+					for ( Path someFolder : relevantFolders )
+						id_folder.put( Integer.valueOf( ind++ ), someFolder );
+					rebuildMap = false;
+				}
+				// ¶ show the options
+				for ( Integer id : id_folder.keySet() )
+				{
+					// improve space pad, so it looks consistent
+					// not using log, so this isn't mixed in the same output (if I ever offer that)
+					System.out.println( id +" "+ id_folder.get( id ).getFileName().toString() );
+				}
+				// get input
+				UiResponse userChoice = null;
+				int attempts = 10;
+				while ( attempts > 0 )
+				{
+					System.out.print( " -- " );
+					String literalInput = input.nextLine();
+					if ( literalInput.isEmpty() )
+						continue;
+					userChoice = parsedInput( literalInput, id_folder );
+					if ( userChoice == null )
+						System.out.println( "That's not a valid choice, try another" );
+					else if ( userChoice.command == Command.QUIT )
+					{
+						return;
+					}
+					else if ( satisfactorySelection( userChoice, screenCharacterWidth ) )
+					{
+						attempts = 10;
+						break;
+					}
+					attempts--;
+				}
+				if ( attempts < 1 )
+				{
+					System.out.println( here +"ten abortive tries is enough to, quit" );
+					askedToQuit = true;
+					break;
+				}
+				else if ( userChoice.command == Command.UI_CHANGE_COLUMN_COUNT
+						|| userChoice.command == Command.UI_CHANGE_SCREEN_CHAR_WIDTH )
+				{
+					Integer userColumns = userChoice.values.iterator().next();
+					if ( userChoice.command == Command.UI_CHANGE_SCREEN_CHAR_WIDTH )
+					{
+						screenCharacterWidth = userColumns;
+					}
+					else if ( userChoice.command == Command.UI_CHANGE_COLUMN_COUNT )
+					{
+						columns = userColumns;
+					}
+				}
+				else if ( userChoice.command == Command.HIDE_FOLDERS )
+				{
+					for ( Integer value : userChoice.values )
+					{
+						relevantFolders.remove( id_folder.get( value ) );
+					}
+					rebuildMap = true;
+				}
+				else if ( userChoice.command == Command.TOMBSTONE_FOLDERS )
+				{
+					Sculptor replacesJars = new Sculptor();
+					for ( Integer value : userChoice.values )
+					{
+						if ( id_folder.containsKey( value ) )
+						{
+							Stream<Path> allContents = Files.list( id_folder.get( value ) );
+							allContents.forEach( replacesJars );
+							allContents.close();
+							relevantFolders.remove( id_folder.get( value ) );
+						}
+					}
+					rebuildMap = true;
+				}
+				else
+					System.out.println( "That's not a valid choice, try another" );
+			}
+		}
+		catch ( IOException | InvalidPathException ipe )
+		{
+			ipe.printStackTrace();
+			return;
+		}
+	}
+
+
+	private boolean satisfactorySelection(
+			UiResponse userChoice, int screenCharacterWidth
+	) {
+		if ( userChoice.command == Command.UI_CHANGE_COLUMN_COUNT
+				|| userChoice.command == Command.UI_CHANGE_SCREEN_CHAR_WIDTH )
+		{
+			Integer userColumns = userChoice.values.iterator().next();
+			if ( userColumns < 1 )
+			{
+				System.out.print( "Must be a positive integer" );
+				return false;
+			}
+			else if ( userChoice.command == Command.UI_CHANGE_COLUMN_COUNT
+					&& userColumns > screenCharacterWidth /20 )
+			{
+				System.out.print( "That's too many columns to divide by" );
+				return false;
+			}
+		}
+		else if ( userChoice.command == Command.HIDE_FOLDERS
+				|| userChoice.command == Command.TOMBSTONE_FOLDERS )
+		{
+			for ( Integer value : userChoice.values )
+			{
+				if ( value < 1 )
+				{
+					System.out.print( "Must be a positive integer" );
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+
+	/** null when invalid */
+	private UiResponse parsedInput(
+			String literalInput, Map<Integer, Path> id_folder
+	) {
+		if ( literalInput == null || literalInput.isEmpty() )
+		{
+			String complaint = "empty input is not valid input";
+			System.out.println( complaint );
+			if ( verbose )
+				log.info( complaint );
+			return null;
+		}
+		else if ( literalInput.equals( Command.QUIT.getFlag() ) )
+		{
+			return new UiResponse( Command.QUIT, new LinkedList<>() );
+		}
+		else if ( ! literalInput.contains( " " ) )
+		{
+			String complaint = "input needs to separate command from values with a space";
+			System.out.println( complaint );
+			if ( verbose )
+				log.info( complaint );
+			return null;
+		}
+		String[] piecesOfInput = literalInput.split( " " );
+		if ( piecesOfInput.length == 1 )
+		{
+			String complaint = "Needs a value, in addition to the command and a space";
+			System.out.println( complaint );
+			return null;
+		}
+		final int piecesIndCommandFlag = 0;
+		Command typeOfDesire = Command.fromFlag( piecesOfInput[ piecesIndCommandFlag ] );
+		if ( typeOfDesire == Command.UNKNOWN )
+		{
+			String complaint = "Unrecognized command, expecting "+ listOfCommandFlags();
+			System.out.println( complaint );
+			if ( verbose )
+				log.info( complaint );
+			return null;
+		}
+		if ( typeOfDesire == Command.UI_CHANGE_COLUMN_COUNT
+				|| typeOfDesire == Command.UI_CHANGE_SCREEN_CHAR_WIDTH )
+		{
+			Integer userValue;
+			try
+			{
+				userValue = Integer.parseInt( piecesOfInput[ piecesIndCommandFlag +1 ] );
+			}
+			catch ( NumberFormatException nfe )
+			{
+				String complaint = "Ui value must be an integer, not "+ piecesOfInput[ piecesIndCommandFlag +1 ];
+				System.out.println( complaint );
+				if ( verbose )
+					log.info( complaint );
+				return null;
+			}
+			Collection<Integer> value = new LinkedList<>();
+			value.add( userValue );
+			return new UiResponse( typeOfDesire, value );
+		}
+		else if ( typeOfDesire == Command.HIDE_FOLDERS
+				|| typeOfDesire == Command.TOMBSTONE_FOLDERS )
+		{
+			Collection<Integer> values = new LinkedList<>();
+			Integer userValue;
+			for ( int ind = piecesIndCommandFlag +1; ind < piecesOfInput.length; ind++ )
+			{
+				String someText = piecesOfInput[ ind ];
+				if ( ! someText.contains( "-" ) )
+				{
+					try
+					{
+						userValue = Integer.parseInt( someText );
+						values.add( userValue );
+					}
+					catch ( NumberFormatException nfe )
+					{
+						String complaint = "Folder ids must be space or hyphen separated"
+								+ "(for a range), not "+ someText;
+						System.out.println( complaint );
+						if ( verbose )
+							log.info( complaint );
+						return null;
+					}
+				}
+				else
+				{
+					int hyphenInd = someText.indexOf( '-' );
+					if ( hyphenInd == 0 )
+					{
+						String complaint = "Folder ids must not be negative";
+						System.out.println( complaint );
+						if ( verbose )
+							log.info( complaint );
+						return null;
+					}
+					String firstV = someText.substring( 0, hyphenInd );
+					String secondV = someText.substring( hyphenInd +1 );
+					try
+					{
+						int first = Integer.parseInt( firstV );
+						int second = Integer.parseInt( secondV );
+						if ( first == second )
+							values.add( first );
+						else if ( first < second )
+						{
+							values.add( first );
+							values.add( second );
+						}
+						else
+						{
+							values.add( second );
+							values.add( first );
+						}
+					}
+					catch ( NumberFormatException nfe )
+					{
+						String complaint = "Folder ids must be integers not "+ someText;
+						System.out.println( complaint );
+						if ( verbose )
+							log.info( complaint );
+						return null;
+					}
+				}
+			}
+			return new UiResponse( typeOfDesire, values );
+		}
+		else
+			return null;
+	}
+
+
+	private String listOfCommandFlags(
+	) {
+		StringBuilder list = new StringBuilder();
+		for ( Command something : Command.values() )
+			if ( something != Command.UNKNOWN )
+				list.append( something.getFlag() ).append( ", " );
+		return list.toString();
 	}
 
 
@@ -70,6 +392,59 @@ public class Givakib
 			ipe.printStackTrace();
 			return;
 		}
+	}
+
+
+	private Set<Path> immediateChildrenWithJar(
+			Path workingRoot
+	) throws IOException {
+		/*
+		alternative needs jre v9
+		return allContents.collect(
+			Collectors.filtering(
+				( Path candidate ) -> {
+					File pAsFolderFile = candidate.toFile();
+					if ( ! pAsFolderFile.isDirectory )
+						return false;
+					String[] filesWithinFolder = pAsFolderFile.list();
+					for ( String filenameWithin : filesWithinFolder )
+						if ( filenameWithin.endsWith( "jar" ) )
+							return true;
+					return false;
+				},
+				Collectors.toSet()
+			)
+		);
+		*/
+		Stream<Path> allContents = Files.list( workingRoot );
+		Set<Path> allFolders = allContents.collect( Collectors.toSet() );
+		allContents.close();
+		Iterator<Path> foreach = allFolders.iterator();
+		while ( foreach.hasNext() )
+		{
+			Path candidate = foreach.next();
+			File pAsFolderFile = candidate.toFile();
+			if ( ! pAsFolderFile.isDirectory() )
+			{
+				foreach.remove();
+				continue;
+			}
+			String[] filesWithinFolder = pAsFolderFile.list();
+			boolean foundOneJar = false;
+			for ( String filenameWithin : filesWithinFolder )
+				if ( filenameWithin.endsWith( "jar" ) )
+				{
+					foundOneJar = true;
+					break;
+				}		
+			if ( ! foundOneJar )
+			{
+				foreach.remove();
+				allFolders.remove( candidate );
+				continue;
+			}
+		}
+		return allFolders;
 	}
 
 
@@ -135,6 +510,7 @@ public class Givakib
 		{
 			Stream<Path> allContents = Files.list( dirWithJarFiles );
 			allContents.forEach( replacesJars );
+			allContents.close();
 		}
 		catch ( IOException ie )
 		{

@@ -5,5 +5,7 @@ Copyright beyondRelations, released under terms of Mozilla Public v2.0 license, 
 
 geriatric_ice_vakib relies on
 * Picocli, which Remko Popma has released under Apache v2.0 license terms.
-* _, which _ has released under _ license terms.
+* Slf4j, which is copyright QOS.ch released under MIT license terms.
+
+// * _, which _ has released under _ license terms.
 

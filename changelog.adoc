@@ -1,6 +1,7 @@
 
 = Geriatric_ice_vakib Changelog
 
+////
 == Unreleased
 
 === Added
@@ -13,10 +14,18 @@
 
 === Removed
 
-* 
+*
 
-// == [.] - 21-0-
+== [.] - 21-0-
+//// 
 
+
+
+== [1.1] - 21-05-01
+
+=== Added
+
+* Interactive mode to choose which jar folders to tombstone
 
 == [1.0] - 21-02-16
 

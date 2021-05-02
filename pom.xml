@@ -18,7 +18,7 @@
 		geriatric_ice_vakib
 		</artifactId>
 	<version>
-		1.0
+		1.1
 		</version>
 	<packaging>
 		jar
@@ -629,51 +629,6 @@
 									</goals>
 								</execution>
 							</executions>
-						</plugin>
-					<plugin>
-						<!-- sign the jar itself -->
-						<groupId>
-							org.apache.maven.plugins
-							</groupId>
-						<artifactId>
-							maven-jarsigner-plugin
-							</artifactId>
-						<version>
-							3.0.0
-							</version>
-						<executions>
-							<execution>
-								<id>
-									sign
-									</id>
-								<goals>
-									<goal>
-										sign
-										</goal>
-									</goals>
-								</execution>
-							<execution>
-								<id>
-									verify
-									</id>
-								<goals>
-									<goal>
-										verify
-										</goal>
-									</goals>
-								</execution>
-							</executions>
-						<configuration>
-							<keystore>
-								../191217_201215_sectigo_codecert_3des.pfx
-								</keystore>
-							<storepass>
-								{ecCfzsJEX1oHtLAzrL1w58Jj+lwmwOtEm88NbJkNczFZ4l2//yzkwd8ALztQOMCu}
-								</storepass>
-							<tsa>
-								http://timestamp.comodoca.com/rfc3161
-								</tsa>
-							</configuration>
 						</plugin>
 					<plugin>
 						<!-- deploy releases to sonatype's server -->
