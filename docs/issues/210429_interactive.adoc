@@ -1,0 +1,42 @@
+
+= issue 210429 1100
+
+== Interactively choose which to remove
+
+* assignee : Nicholas
+* status : to do
+* priority : medium
+
+While removing everything except the last was appropriate before, some time has passed, and I'd like to keep some of them (some in the center, some at the end). While I could provide some mechanism to choose via the program arguments (after completing i210216), it would just be simpler to provide an interactive session for pruning the existing jars.
+
+Provide a starting argument to launch this session. It would consist of polling which jars exist, showing them, and accepting some input to delete some of the jars or to quit. This won't need to poll every time, as there's no point in honoring the use case of person deletes some, some entity deletes more, and gvk tries to ensure it is always correct. The point is to delete them, showing some stale options isn't terribly interesting or likely.
+
+////
+== comments
+
+=== yyMMdd hhMM zzz
+
+comment author : 
+
+comment_here
+////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
