@@ -238,7 +238,6 @@ public class Givakib
 				currentId[ colInd ] += 1;
 			}
 			System.out.println();
-if ( rowInd > 1_000 ) break; // 4TESTS, just in case
 		}
 	}
 
