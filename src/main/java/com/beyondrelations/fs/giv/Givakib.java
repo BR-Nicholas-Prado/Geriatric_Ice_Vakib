@@ -382,15 +382,18 @@ public class Givakib
 						int second = Integer.parseInt( secondV );
 						if ( first == second )
 							values.add( first );
-						else if ( first < second )
-						{
-							values.add( first );
-							values.add( second );
-						}
 						else
 						{
-							values.add( second );
+							if ( first > second )
+							{
+								int temp = first;
+								first = second;
+								second = temp;
+							}
 							values.add( first );
+							for ( int val = first +1; val < second; val++ )
+								values.add( val );
+							values.add( second );
 						}
 					}
 					catch ( NumberFormatException nfe )
