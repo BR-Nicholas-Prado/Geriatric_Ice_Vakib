@@ -19,6 +19,15 @@ Mozilla Public license v2.0
 * -h help
 * -V version
 
+=== interactive mode
+
+*  EXCLUDE_FOLDERS( "e" ),
+		HELP( "h" ),
+		QUIT( "q" ),
+		TOMBSTONE_FOLDERS( "t" ),
+		UI_CHANGE_COLUMN_COUNT( "c" ),
+		UI_CHANGE_SCREEN_CHAR_WIDTH( "w" ),
+
 == Name
 
 Vakib is a latinization of the Tzotzil word for numeral 6.

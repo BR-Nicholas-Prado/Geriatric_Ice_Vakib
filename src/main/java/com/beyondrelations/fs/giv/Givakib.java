@@ -34,7 +34,8 @@ public class Givakib
 
 	private enum Command
 	{
-		HIDE_FOLDERS( "h" ),
+		EXCLUDE_FOLDERS( "e" ),
+		HELP( "h" ),
 		QUIT( "q" ),
 		TOMBSTONE_FOLDERS( "t" ),
 		UI_CHANGE_COLUMN_COUNT( "c" ),
@@ -87,6 +88,19 @@ public class Givakib
 	}
 
 
+	private void renderCommands(
+	) {
+		System.out.println( "[[ Command ]] [[ folder ids, ex 1 3 4-9 ]]\n:Options:" );
+		for ( Command inputOption : Command.values() )
+		{
+			if ( inputOption.getFlag().isEmpty() )
+				continue;
+			System.out.println( inputOption.getFlag() +" "+ inputOption.name() );
+		}
+		System.out.println();
+	}
+
+
 	public void interactivelyReplaceWithTombstonesIn(
 			String descriptionOfPath
 	) {
@@ -101,12 +115,7 @@ public class Givakib
 			boolean askedToQuit = false;
 			boolean rebuildMap = true;
 			Scanner input = new Scanner( System.in );
-			System.out.println( "[[ Command ]] [[ folder ids ]]\n:Options:" );
-			for ( Command inputOption : Command.values() )
-			{
-				System.out.println( inputOption.getFlag() +" "+ inputOption.name() );
-			}
-			System.out.println();
+			renderCommands();
 			while ( ! askedToQuit )
 			{
 				if ( rebuildMap )
@@ -136,6 +145,11 @@ public class Givakib
 					{
 						return;
 					}
+					else if ( userChoice.command == Command.HELP )
+					{
+						renderCommands();
+						continue;
+					}
 					else if ( satisfactorySelection( userChoice, screenCharacterWidth ) )
 					{
 						attempts = 10;
@@ -163,7 +177,7 @@ public class Givakib
 						columns = userColumns;
 					}
 				}
-				else if ( userChoice.command == Command.HIDE_FOLDERS )
+				else if ( userChoice.command == Command.EXCLUDE_FOLDERS )
 				{
 					for ( Integer value : userChoice.values )
 					{
@@ -261,7 +275,7 @@ public class Givakib
 				return false;
 			}
 		}
-		else if ( userChoice.command == Command.HIDE_FOLDERS
+		else if ( userChoice.command == Command.EXCLUDE_FOLDERS
 				|| userChoice.command == Command.TOMBSTONE_FOLDERS )
 		{
 			for ( Integer value : userChoice.values )
@@ -293,6 +307,10 @@ public class Givakib
 		{
 			return new UiResponse( Command.QUIT, new LinkedList<>() );
 		}
+		else if ( literalInput.equals( Command.HELP.getFlag() ) )
+		{
+			return new UiResponse( Command.HELP, new LinkedList<>() );
+		}
 		else if ( ! literalInput.contains( " " ) )
 		{
 			String complaint = "input needs to separate command from values with a space";
@@ -309,7 +327,7 @@ public class Givakib
 			return null;
 		}
 		final int piecesIndCommandFlag = 0;
-		Command typeOfDesire = Command.fromFlag( piecesOfInput[ piecesIndCommandFlag ] );
+		Command typeOfDesire = Command.fromFlag( piecesOfInput[ piecesIndCommandFlag ].toLowerCase() );
 		if ( typeOfDesire == Command.UNKNOWN )
 		{
 			String complaint = "Unrecognized command, expecting "+ listOfCommandFlags();
@@ -338,7 +356,7 @@ public class Givakib
 			value.add( userValue );
 			return new UiResponse( typeOfDesire, value );
 		}
-		else if ( typeOfDesire == Command.HIDE_FOLDERS
+		else if ( typeOfDesire == Command.EXCLUDE_FOLDERS
 				|| typeOfDesire == Command.TOMBSTONE_FOLDERS )
 		{
 			Collection<Integer> values = new LinkedList<>();
