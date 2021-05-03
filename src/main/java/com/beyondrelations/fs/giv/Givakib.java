@@ -113,18 +113,14 @@ public class Givakib
 				{
 					id_folder.clear();
 					int ind = 1;
-					for ( Path someFolder : relevantFolders )
-						id_folder.put( Integer.valueOf( ind++ ), someFolder );
+					Object[] sortable = relevantFolders.toArray();
+					Arrays.sort( sortable );
+					for ( Object someFolder : sortable )
+						id_folder.put( Integer.valueOf( ind++ ), (Path)someFolder );
 					rebuildMap = false;
 				}
-				// ¶ show the options
-				for ( Integer id : id_folder.keySet() )
-				{
-					// improve space pad, so it looks consistent
-					// not using log, so this isn't mixed in the same output (if I ever offer that)
-					System.out.println( id +" "+ id_folder.get( id ).getFileName().toString() );
-				}
-				// get input
+				renderFolderOptions( id_folder, columns, screenCharacterWidth );
+				// ¶ get input
 				UiResponse userChoice = null;
 				int attempts = 10;
 				while ( attempts > 0 )
@@ -145,6 +141,7 @@ public class Givakib
 						attempts = 10;
 						break;
 					}
+					// ¶ satisfactorySelection() complained otherwise
 					attempts--;
 				}
 				if ( attempts < 1 )
@@ -189,14 +186,59 @@ public class Givakib
 					}
 					rebuildMap = true;
 				}
-				else
-					System.out.println( "That's not a valid choice, try another" );
 			}
 		}
 		catch ( IOException | InvalidPathException ipe )
 		{
 			ipe.printStackTrace();
 			return;
+		}
+	}
+
+
+	private void renderFolderOptions(
+			Map<Integer, Path> id_folder, int columns, int screenCharacterWidth
+	) {
+		int evenlyDivisibleAmount = id_folder.size() / columns;
+		int remainder = id_folder.size() - ( columns * evenlyDivisibleAmount );
+		int[] maxIds = new int[ columns ], currentId = new int[ columns ];
+		maxIds[ 0 ] = evenlyDivisibleAmount + remainder;
+		// ¶ fill with the max of each column
+		for ( int ind = 1; ind < columns; ind++ )
+			maxIds[ ind ] = evenlyDivisibleAmount + maxIds[ ind -1 ] +1; // FIX too many, 43 for 41 because 41/2 = 21 apparently
+		// ¶ fill with the current id of each column
+		currentId[ 0 ] = 1;
+		for ( int ind = 1; ind < maxIds.length; ind++ )
+			currentId[ ind ] = maxIds[ ind -1 ] +1;
+		// ¶ just using uniform columns, rather than minimal width for each
+		int maxIdWidth = 1;
+		if ( id_folder.size() > 10_000 )
+			maxIdWidth = 5;
+		else if ( id_folder.size() > 1_000 )
+			maxIdWidth = 4;
+		else if ( id_folder.size() > 100 )
+			maxIdWidth = 3;
+		else if ( id_folder.size() > 10 )
+			maxIdWidth = 2;
+		String formatForId = "%0"+ maxIdWidth +"d";
+		int maxPathWidth = ( screenCharacterWidth / columns ) - maxIdWidth -3;
+		String formatForWholeLine = " "+ formatForId +"  %-"+ maxPathWidth +"s"; // ¶ right pad the folder name
+		for ( int rowInd = currentId[ 0 ]; rowInd < maxIds[ 0 ]; rowInd++ )
+		{
+			for ( int colInd = 0; colInd < maxIds.length; colInd++ )
+			{
+				if ( currentId[ colInd ] >= maxIds[ colInd ]
+						|| ! id_folder.containsKey(  currentId[ colInd ] ) )
+					continue;
+				// ¶ not using log, so this isn't mixed in the same output
+				System.out.print( String.format(
+						formatForWholeLine,
+						currentId[ colInd ],
+						id_folder.get( currentId[ colInd ] ).getFileName() ) );
+				currentId[ colInd ] += 1;
+			}
+			System.out.println();
+if ( rowInd > 1_000 ) break; // 4TESTS, just in case
 		}
 	}
 
