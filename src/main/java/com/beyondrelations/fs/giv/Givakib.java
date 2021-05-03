@@ -110,7 +110,7 @@ public class Givakib
 		try {
 			Set<Path> relevantFolders = immediateChildrenWithJar( os.getPath( descriptionOfPath ) );
 			Map<Integer, Path> id_folder = new HashMap<>();
-			int columns = 1;
+			int columns = 2;
 			int screenCharacterWidth = 100;
 			boolean askedToQuit = false;
 			boolean rebuildMap = true;
@@ -128,7 +128,7 @@ public class Givakib
 						id_folder.put( Integer.valueOf( ind++ ), (Path)someFolder );
 					rebuildMap = false;
 				}
-				renderFolderOptions( id_folder, columns, screenCharacterWidth );
+				renderFolderDescriptions( id_folder, columns, screenCharacterWidth );
 				// ¶ get input
 				UiResponse userChoice = null;
 				int attempts = 10;
@@ -210,7 +210,7 @@ public class Givakib
 	}
 
 
-	private void renderFolderOptions(
+	private void renderFolderDescriptions(
 			Map<Integer, Path> id_folder, int columns, int screenCharacterWidth
 	) {
 		int evenlyDivisibleAmount = id_folder.size() / columns;
@@ -219,7 +219,7 @@ public class Givakib
 		maxIds[ 0 ] = evenlyDivisibleAmount + remainder;
 		// ¶ fill with the max of each column
 		for ( int ind = 1; ind < columns; ind++ )
-			maxIds[ ind ] = evenlyDivisibleAmount + maxIds[ ind -1 ] +1; // FIX too many, 43 for 41 because 41/2 = 21 apparently
+			maxIds[ ind ] = Math.min( evenlyDivisibleAmount + maxIds[ ind -1 ], id_folder.size() ); // FIX too many, 43 for 41 because 41/2 = 21 apparently
 		// ¶ fill with the current id of each column
 		currentId[ 0 ] = 1;
 		for ( int ind = 1; ind < maxIds.length; ind++ )
@@ -237,18 +237,21 @@ public class Givakib
 		String formatForId = "%0"+ maxIdWidth +"d";
 		int maxPathWidth = ( screenCharacterWidth / columns ) - maxIdWidth -3;
 		String formatForWholeLine = " "+ formatForId +"  %-"+ maxPathWidth +"s"; // ¶ right pad the folder name
-		for ( int rowInd = currentId[ 0 ]; rowInd < maxIds[ 0 ]; rowInd++ )
+		for ( int rowInd = 0; rowInd < maxIds[ 0 ]; rowInd++ )
 		{
 			for ( int colInd = 0; colInd < maxIds.length; colInd++ )
 			{
-				if ( currentId[ colInd ] >= maxIds[ colInd ]
+				if ( currentId[ colInd ] > maxIds[ colInd ]
 						|| ! id_folder.containsKey(  currentId[ colInd ] ) )
 					continue;
 				// ¶ not using log, so this isn't mixed in the same output
+				String folderName = id_folder.get( currentId[ colInd ] ).getFileName().toString();
 				System.out.print( String.format(
 						formatForWholeLine,
 						currentId[ colInd ],
-						id_folder.get( currentId[ colInd ] ).getFileName() ) );
+						folderName.substring( 0, Math.min(
+								folderName.length(),
+								maxPathWidth ) ) ) );
 				currentId[ colInd ] += 1;
 			}
 			System.out.println();
