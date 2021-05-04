@@ -88,19 +88,6 @@ public class Givakib
 	}
 
 
-	private void renderCommands(
-	) {
-		System.out.println( "[[ Command ]] [[ folder ids, ex 1 3 4-9 ]]\n:Options:" );
-		for ( Command inputOption : Command.values() )
-		{
-			if ( inputOption.getFlag().isEmpty() )
-				continue;
-			System.out.println( inputOption.getFlag() +" "+ inputOption.name() );
-		}
-		System.out.println();
-	}
-
-
 	public void interactivelyReplaceWithTombstonesIn(
 			String descriptionOfPath
 	) {
@@ -210,87 +197,89 @@ public class Givakib
 	}
 
 
-	private void renderFolderDescriptions(
-			Map<Integer, Path> id_folder, int columns, int screenCharacterWidth
+	public void replaceJarsWithTombstonesIn(
+			String descriptionOfPath
 	) {
-		int evenlyDivisibleAmount = id_folder.size() / columns;
-		int remainder = id_folder.size() - ( columns * evenlyDivisibleAmount );
-		int[] maxIds = new int[ columns ], currentId = new int[ columns ];
-		maxIds[ 0 ] = evenlyDivisibleAmount + remainder;
-		// ¶ fill with the max of each column
-		for ( int ind = 1; ind < columns; ind++ )
-			maxIds[ ind ] = Math.min( evenlyDivisibleAmount + maxIds[ ind -1 ], id_folder.size() ); // FIX too many, 43 for 41 because 41/2 = 21 apparently
-		// ¶ fill with the current id of each column
-		currentId[ 0 ] = 1;
-		for ( int ind = 1; ind < maxIds.length; ind++ )
-			currentId[ ind ] = maxIds[ ind -1 ] +1;
-		// ¶ just using uniform columns, rather than minimal width for each
-		int maxIdWidth = 1;
-		if ( id_folder.size() > 10_000 )
-			maxIdWidth = 5;
-		else if ( id_folder.size() > 1_000 )
-			maxIdWidth = 4;
-		else if ( id_folder.size() > 100 )
-			maxIdWidth = 3;
-		else if ( id_folder.size() > 10 )
-			maxIdWidth = 2;
-		String formatForId = "%0"+ maxIdWidth +"d";
-		int maxPathWidth = ( screenCharacterWidth / columns ) - maxIdWidth -3;
-		String formatForWholeLine = " "+ formatForId +"  %-"+ maxPathWidth +"s"; // ¶ right pad the folder name
-		for ( int rowInd = 0; rowInd < maxIds[ 0 ]; rowInd++ )
+		if ( descriptionOfPath.isEmpty() )
+			descriptionOfPath = ".";
+		try {
+			tombstonesInImmediateChildren( os.getPath( descriptionOfPath ) );
+		}
+		catch ( InvalidPathException ipe )
 		{
-			for ( int colInd = 0; colInd < maxIds.length; colInd++ )
-			{
-				if ( currentId[ colInd ] > maxIds[ colInd ]
-						|| ! id_folder.containsKey(  currentId[ colInd ] ) )
-					continue;
-				// ¶ not using log, so this isn't mixed in the same output
-				String folderName = id_folder.get( currentId[ colInd ] ).getFileName().toString();
-				System.out.print( String.format(
-						formatForWholeLine,
-						currentId[ colInd ],
-						folderName.substring( 0, Math.min(
-								folderName.length(),
-								maxPathWidth ) ) ) );
-				currentId[ colInd ] += 1;
-			}
-			System.out.println();
+			ipe.printStackTrace();
+			return;
 		}
 	}
 
 
-	private boolean satisfactorySelection(
-			UiResponse userChoice, int screenCharacterWidth
+	public void setVerbose(
+			boolean beThatWay
 	) {
-		if ( userChoice.command == Command.UI_CHANGE_COLUMN_COUNT
-				|| userChoice.command == Command.UI_CHANGE_SCREEN_CHAR_WIDTH )
-		{
-			Integer userColumns = userChoice.values.iterator().next();
-			if ( userColumns < 1 )
-			{
-				System.out.print( "Must be a positive integer" );
-				return false;
-			}
-			else if ( userChoice.command == Command.UI_CHANGE_COLUMN_COUNT
-					&& userColumns > screenCharacterWidth /20 )
-			{
-				System.out.print( "That's too many columns to divide by" );
-				return false;
-			}
-		}
-		else if ( userChoice.command == Command.EXCLUDE_FOLDERS
-				|| userChoice.command == Command.TOMBSTONE_FOLDERS )
-		{
-			for ( Integer value : userChoice.values )
-			{
-				if ( value < 1 )
-				{
-					System.out.print( "Must be a positive integer" );
+		verbose = beThatWay;
+	}
+
+
+	private Set<Path> immediateChildrenWithJar(
+			Path workingRoot
+	) throws IOException {
+		/*
+		alternative needs jre v9
+		return allContents.collect(
+			Collectors.filtering(
+				( Path candidate ) -> {
+					File pAsFolderFile = candidate.toFile();
+					if ( ! pAsFolderFile.isDirectory )
+						return false;
+					String[] filesWithinFolder = pAsFolderFile.list();
+					for ( String filenameWithin : filesWithinFolder )
+						if ( filenameWithin.endsWith( "jar" ) )
+							return true;
 					return false;
-				}
+				},
+				Collectors.toSet()
+			)
+		);
+		*/
+		Stream<Path> allContents = Files.list( workingRoot );
+		Set<Path> allFolders = allContents.collect( Collectors.toSet() );
+		allContents.close();
+		Iterator<Path> foreach = allFolders.iterator();
+		while ( foreach.hasNext() )
+		{
+			Path candidate = foreach.next();
+			File pAsFolderFile = candidate.toFile();
+			if ( ! pAsFolderFile.isDirectory() )
+			{
+				foreach.remove();
+				continue;
+			}
+			String[] filesWithinFolder = pAsFolderFile.list();
+			boolean foundOneJar = false;
+			for ( String filenameWithin : filesWithinFolder )
+				if ( filenameWithin.endsWith( "jar" ) )
+				{
+					foundOneJar = true;
+					break;
+				}		
+			if ( ! foundOneJar )
+			{
+				foreach.remove();
+				allFolders.remove( candidate );
+				continue;
 			}
 		}
-		return true;
+		return allFolders;
+	}
+
+
+	private String listOfCommandFlags(
+	) {
+		StringBuilder list = new StringBuilder();
+		for ( Command something : Command.values() )
+			if ( something != Command.UNKNOWN )
+				list.append( something.getFlag() ).append( ", " );
+		return list.toString();
 	}
 
 
@@ -434,82 +423,117 @@ public class Givakib
 	}
 
 
-	private String listOfCommandFlags(
+	private void renderCommands(
 	) {
-		StringBuilder list = new StringBuilder();
-		for ( Command something : Command.values() )
-			if ( something != Command.UNKNOWN )
-				list.append( something.getFlag() ).append( ", " );
-		return list.toString();
+		System.out.println( "[[ Command ]] [[ folder ids, ex 1 3 4-9 ]]\n:Options:" );
+		for ( Command inputOption : Command.values() )
+		{
+			if ( inputOption.getFlag().isEmpty() )
+				continue;
+			System.out.println( inputOption.getFlag() +" "+ inputOption.name() );
+		}
+		System.out.println();
 	}
 
 
-	public void replaceJarsWithTombstonesIn(
-			String descriptionOfPath
+	private void renderFolderDescriptions(
+			Map<Integer, Path> id_folder, int columns, int screenCharacterWidth
 	) {
-		if ( descriptionOfPath.isEmpty() )
-			descriptionOfPath = ".";
-		try {
-			tombstonesInImmediateChildren( os.getPath( descriptionOfPath ) );
-		}
-		catch ( InvalidPathException ipe )
+		int evenlyDivisibleAmount = id_folder.size() / columns;
+		int remainder = id_folder.size() - ( columns * evenlyDivisibleAmount );
+		int[] maxIds = new int[ columns ], currentId = new int[ columns ];
+		maxIds[ 0 ] = evenlyDivisibleAmount + remainder;
+		// ¶ fill with the max of each column
+		for ( int ind = 1; ind < columns; ind++ )
+			maxIds[ ind ] = Math.min( evenlyDivisibleAmount + maxIds[ ind -1 ], id_folder.size() ); // FIX too many, 43 for 41 because 41/2 = 21 apparently
+		// ¶ fill with the current id of each column
+		currentId[ 0 ] = 1;
+		for ( int ind = 1; ind < maxIds.length; ind++ )
+			currentId[ ind ] = maxIds[ ind -1 ] +1;
+		// ¶ just using uniform columns, rather than minimal width for each
+		int maxIdWidth = 1;
+		if ( id_folder.size() > 10_000 )
+			maxIdWidth = 5;
+		else if ( id_folder.size() > 1_000 )
+			maxIdWidth = 4;
+		else if ( id_folder.size() > 100 )
+			maxIdWidth = 3;
+		else if ( id_folder.size() > 10 )
+			maxIdWidth = 2;
+		String formatForId = "%0"+ maxIdWidth +"d";
+		int maxPathWidth = ( screenCharacterWidth / columns ) - maxIdWidth -3;
+		String formatForWholeLine = " "+ formatForId +"  %-"+ maxPathWidth +"s"; // ¶ right pad the folder name
+		for ( int rowInd = 0; rowInd < maxIds[ 0 ]; rowInd++ )
 		{
-			ipe.printStackTrace();
+			for ( int colInd = 0; colInd < maxIds.length; colInd++ )
+			{
+				if ( currentId[ colInd ] > maxIds[ colInd ]
+						|| ! id_folder.containsKey(  currentId[ colInd ] ) )
+					continue;
+				// ¶ not using log, so this isn't mixed in the same output
+				String folderName = id_folder.get( currentId[ colInd ] ).getFileName().toString();
+				System.out.print( String.format(
+						formatForWholeLine,
+						currentId[ colInd ],
+						folderName.substring( 0, Math.min(
+								folderName.length(),
+								maxPathWidth ) ) ) );
+				currentId[ colInd ] += 1;
+			}
+			System.out.println();
+		}
+	}
+
+
+	private boolean satisfactorySelection(
+			UiResponse userChoice, int screenCharacterWidth
+	) {
+		if ( userChoice.command == Command.UI_CHANGE_COLUMN_COUNT
+				|| userChoice.command == Command.UI_CHANGE_SCREEN_CHAR_WIDTH )
+		{
+			Integer userColumns = userChoice.values.iterator().next();
+			if ( userColumns < 1 )
+			{
+				System.out.print( "Must be a positive integer" );
+				return false;
+			}
+			else if ( userChoice.command == Command.UI_CHANGE_COLUMN_COUNT
+					&& userColumns > screenCharacterWidth /20 )
+			{
+				System.out.print( "That's too many columns to divide by" );
+				return false;
+			}
+		}
+		else if ( userChoice.command == Command.EXCLUDE_FOLDERS
+				|| userChoice.command == Command.TOMBSTONE_FOLDERS )
+		{
+			for ( Integer value : userChoice.values )
+			{
+				if ( value < 1 )
+				{
+					System.out.print( "Must be a positive integer" );
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+
+	private void replaceJarsWithTombstonesIn(
+			Path dirWithJarFiles, Sculptor replacesJars
+	) {
+		try
+		{
+			Stream<Path> allContents = Files.list( dirWithJarFiles );
+			allContents.forEach( replacesJars );
+			allContents.close();
+		}
+		catch ( IOException ie )
+		{
+			ie.printStackTrace();
 			return;
 		}
-	}
-
-
-	private Set<Path> immediateChildrenWithJar(
-			Path workingRoot
-	) throws IOException {
-		/*
-		alternative needs jre v9
-		return allContents.collect(
-			Collectors.filtering(
-				( Path candidate ) -> {
-					File pAsFolderFile = candidate.toFile();
-					if ( ! pAsFolderFile.isDirectory )
-						return false;
-					String[] filesWithinFolder = pAsFolderFile.list();
-					for ( String filenameWithin : filesWithinFolder )
-						if ( filenameWithin.endsWith( "jar" ) )
-							return true;
-					return false;
-				},
-				Collectors.toSet()
-			)
-		);
-		*/
-		Stream<Path> allContents = Files.list( workingRoot );
-		Set<Path> allFolders = allContents.collect( Collectors.toSet() );
-		allContents.close();
-		Iterator<Path> foreach = allFolders.iterator();
-		while ( foreach.hasNext() )
-		{
-			Path candidate = foreach.next();
-			File pAsFolderFile = candidate.toFile();
-			if ( ! pAsFolderFile.isDirectory() )
-			{
-				foreach.remove();
-				continue;
-			}
-			String[] filesWithinFolder = pAsFolderFile.list();
-			boolean foundOneJar = false;
-			for ( String filenameWithin : filesWithinFolder )
-				if ( filenameWithin.endsWith( "jar" ) )
-				{
-					foundOneJar = true;
-					break;
-				}		
-			if ( ! foundOneJar )
-			{
-				foreach.remove();
-				allFolders.remove( candidate );
-				continue;
-			}
-		}
-		return allFolders;
 	}
 
 
@@ -568,35 +592,11 @@ public class Givakib
 	}
 
 
-	private void replaceJarsWithTombstonesIn(
-			Path dirWithJarFiles, Sculptor replacesJars
-	) {
-		try
-		{
-			Stream<Path> allContents = Files.list( dirWithJarFiles );
-			allContents.forEach( replacesJars );
-			allContents.close();
-		}
-		catch ( IOException ie )
-		{
-			ie.printStackTrace();
-			return;
-		}
-	}
-
-
-	public void setVerbose(
-			boolean beThatWay
-	) {
-		verbose = beThatWay;
-	}
-
-
 	/** because it carves tombstones */
 	private class Sculptor
 			implements Consumer<Path>
 	{
-
+	
 		public void accept(
 				Path target
 		) {
