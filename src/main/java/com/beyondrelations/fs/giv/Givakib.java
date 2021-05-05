@@ -36,6 +36,7 @@ public class Givakib
 	{
 		EXCLUDE_FOLDERS( "e" ),
 		HELP( "h" ),
+		LIST_CONTENTS( "l" ),
 		QUIT( "q" ),
 		TOMBSTONE_FOLDERS( "t" ),
 		UI_CHANGE_COLUMN_COUNT( "c" ),
@@ -137,10 +138,25 @@ public class Givakib
 						renderCommands();
 						continue;
 					}
-					else if ( satisfactorySelection( userChoice, screenCharacterWidth ) )
+					else if ( satisfactorySelection( userChoice, screenCharacterWidth, id_folder.size() ) )
 					{
-						attempts = 10;
-						break;
+						if ( userChoice.command != Command.LIST_CONTENTS )
+						{
+							attempts = 10;
+							break;
+						}
+						else
+						{
+							// ¶ here so we don't cover the answer with the folder ids
+							Integer folderId = userChoice.values.iterator().next();
+							if ( id_folder.containsKey( folderId ) )
+							{
+								Stream<Path> allContents = Files.list( id_folder.get( folderId ) );
+								allContents.forEach( new Herald() );
+								allContents.close();
+							}
+							attempts++;
+						}
 					}
 					// ¶ satisfactorySelection() complained otherwise
 					attempts--;
@@ -329,7 +345,8 @@ public class Givakib
 			return null;
 		}
 		if ( typeOfDesire == Command.UI_CHANGE_COLUMN_COUNT
-				|| typeOfDesire == Command.UI_CHANGE_SCREEN_CHAR_WIDTH )
+				|| typeOfDesire == Command.UI_CHANGE_SCREEN_CHAR_WIDTH
+				|| typeOfDesire == Command.LIST_CONTENTS )
 		{
 			Integer userValue;
 			try
@@ -486,10 +503,11 @@ public class Givakib
 
 
 	private boolean satisfactorySelection(
-			UiResponse userChoice, int screenCharacterWidth
+			UiResponse userChoice, int screenCharacterWidth, int folderCount
 	) {
 		if ( userChoice.command == Command.UI_CHANGE_COLUMN_COUNT
-				|| userChoice.command == Command.UI_CHANGE_SCREEN_CHAR_WIDTH )
+				|| userChoice.command == Command.UI_CHANGE_SCREEN_CHAR_WIDTH
+				|| userChoice.command == Command.LIST_CONTENTS )
 		{
 			Integer userColumns = userChoice.values.iterator().next();
 			if ( userColumns < 1 )
@@ -501,6 +519,11 @@ public class Givakib
 					&& userColumns > screenCharacterWidth /20 )
 			{
 				System.out.print( "That's too many columns to divide by" );
+				return false;
+			}
+			else if ( userColumns > folderCount )
+			{
+				System.out.print( "That's not an available folder" );
 				return false;
 			}
 		}
@@ -540,9 +563,8 @@ public class Givakib
 	private void tombstonesInImmediateChildren(
 			Path workingRoot
 	) {
-		try
+		try ( Stream<Path> allContents = Files.list( workingRoot ); )
 		{
-			Stream<Path> allContents = Files.list( workingRoot );
 			Object[] allFilesInRoot = allContents.toArray();
 			Arrays.sort( allFilesInRoot,
 					// comparator
@@ -620,7 +642,7 @@ public class Givakib
 				Path intendedTombstone = target.getParent().resolve( os.getPath( tombstoneName ) );
 				if ( verbose )
 					log.info( "position "+ intendedTombstone.toString() );
-				Path ignored = Files.createFile( intendedTombstone );
+				Files.createFile( intendedTombstone );
 				Files.delete( target );
 			}
 			catch ( UnsupportedOperationException
@@ -629,6 +651,19 @@ public class Givakib
 				ie.printStackTrace();
 				return;
 			}
+		}
+	}
+
+
+	/** Communicates the name of this path */
+	private class Herald
+			implements Consumer<Path>
+	{
+	
+		public void accept(
+				Path target
+		) {
+			System.out.println( "\t"+ target.getFileName() );
 		}
 	}
 
