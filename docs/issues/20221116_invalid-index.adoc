@@ -1,0 +1,49 @@
+
+= issue 20221116
+
+== Reject invalid index
+
+* assignee : Nicholas Prado
+* status : to do
+* priority : medium
+
+Givakib offered options 1-12, but the folder names were 3-15.
+I typed in `t 1-15`.
+This deleted all twelve jars.
+I meant to type in 1-6; because of the lexical sorting, 15 was the sixth element.
+15 was not a valid index.
+
+Reject a request that includes an invalid positive index.
+(It already rejects negative indicies.)
+
+////
+== comments
+
+=== yyyy-MM-dd hh:MM zzz
+
+comment author : 
+
+comment_here
+
+=== -- :
+////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
