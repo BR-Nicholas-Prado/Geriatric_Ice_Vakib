@@ -1,0 +1,47 @@
+
+= issue 20221115
+
+== Delete service package
+
+* assignee : Nicholas Prado
+* status : to do
+* priority : medium
+
+I copy the gzipped tar file containing the service jars for a given client to the same folder.
+However, gvakib can only delete jar files.
+I could rename them, but then I'd have done the equivalent of deleting them by hand.
+
+Provide some means of indicating that the session should search for a different file extension than jar.
+Consider using a startup argument.
+
+////
+== comments
+
+=== yyyy-MM-dd hh:MM zzz
+
+comment author : 
+
+comment_here
+
+=== -- :
+////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
