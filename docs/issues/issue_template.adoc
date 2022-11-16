@@ -1,5 +1,5 @@
 
-= issue yyMMdd_hhmm
+= issue yyyyMMdd_hhmm
 
 == title_here
 
@@ -12,11 +12,13 @@ desc_here
 ////
 == comments
 
-=== yyMMdd hhMM zzz
+=== yyyy-MM-dd hh:MM zzz
 
 comment author : 
 
 comment_here
+
+=== -- :
 ////
 
 
