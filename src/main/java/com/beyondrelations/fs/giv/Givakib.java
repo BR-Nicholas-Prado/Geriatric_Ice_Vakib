@@ -368,16 +368,22 @@ public class Givakib
 		else if ( typeOfDesire == Command.EXCLUDE_FOLDERS
 				|| typeOfDesire == Command.TOMBSTONE_FOLDERS )
 		{
+			char hyphenChar = '-';
+			String hyphenString = String.valueOf( hyphenChar );
 			Collection<Integer> values = new LinkedList<>();
 			Integer userValue;
 			for ( int ind = piecesIndCommandFlag +1; ind < piecesOfInput.length; ind++ )
 			{
 				String someText = piecesOfInput[ ind ];
-				if ( ! someText.contains( "-" ) )
+				if ( ! someText.contains( hyphenString ) )
 				{
 					try
 					{
 						userValue = Integer.parseInt( someText );
+
+						if ( ! id_folder.containsKey( userValue ) )
+							return null;
+
 						values.add( userValue );
 					}
 					catch ( NumberFormatException nfe )
@@ -392,7 +398,7 @@ public class Givakib
 				}
 				else
 				{
-					int hyphenInd = someText.indexOf( '-' );
+					int hyphenInd = someText.indexOf( hyphenChar );
 					if ( hyphenInd == 0 )
 					{
 						String complaint = "Folder ids must not be negative";
@@ -408,7 +414,13 @@ public class Givakib
 						int first = Integer.parseInt( firstV );
 						int second = Integer.parseInt( secondV );
 						if ( first == second )
+						{
+
+							if ( ! id_folder.containsKey( first ) )
+								return null;
+
 							values.add( first );
+						}
 						else
 						{
 							if ( first > second )
@@ -417,9 +429,19 @@ public class Givakib
 								first = second;
 								second = temp;
 							}
+
+							if ( ! id_folder.containsKey( first )
+									|| ! id_folder.containsKey( second ) )
+								return null;
+
 							values.add( first );
 							for ( int val = first +1; val < second; val++ )
-								values.add( val );
+							{
+								if ( ! id_folder.containsKey( val ) )
+									return null;
+								else
+									values.add( val );
+							}
 							values.add( second );
 						}
 					}

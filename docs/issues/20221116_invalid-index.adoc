@@ -4,7 +4,7 @@
 == Reject invalid index
 
 * assignee : Nicholas Prado
-* status : to do
+* status : finished
 * priority : medium
 
 Givakib offered options 1-12, but the folder names were 3-15.

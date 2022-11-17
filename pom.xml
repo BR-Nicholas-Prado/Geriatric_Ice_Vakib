@@ -373,9 +373,14 @@
 				</url>
 			</license>
 		</licenses>
-	<!--
-		organization
-		-->
+	<organization>
+		<name>
+			beyondRelations
+			</name>
+		<url>
+			http://www.getworkflo.com
+			</url>
+		</organization>
 	<developers>
 		<developer>
 			<id>

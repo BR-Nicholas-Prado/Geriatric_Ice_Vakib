@@ -16,22 +16,26 @@
 
 *
 
-== [.] - 21-0-
-//// 
+== [.] - 20-0-
+////
 
+== [2.0] - 2022-11-16
 
+=== Changed
 
-== [1.1] - 21-05-01
+* i20221116 tombstone and exclude commands reject invalid indicies 
 
-=== Added
-
-* Interactive mode to choose which jar folders to tombstone
-
-== [1.0] - 21-02-16
+== [1.1] - 2021-05-01
 
 === Added
 
-* Replaces jars in specified root (or enclosing directory, when none specified) with text files that include the date in the file name.
+* i210429 Interactive mode to choose which jar folders to tombstone
+
+== [1.0] - 2021-02-16
+
+=== Added
+
+* i210211 Replaces jars in specified root (or enclosing directory, when none specified) with text files that include the date in the file name.
 * Adds a module descriptor
 * Logs via slf4j simple
 
