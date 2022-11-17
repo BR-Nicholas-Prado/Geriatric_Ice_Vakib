@@ -11,11 +11,12 @@ Mozilla Public license v2.0
 
 == Run
 
-* java -jar giv-2.0.jar [[ path ]]
+* java -jar giv-2.1.jar [[ path ]]
 * gradle --console plain ru --args="-i build"
 
 * -v verbose output
 * -i interactive mode
+* -x file extension to target
 * -h help
 * -V version
 

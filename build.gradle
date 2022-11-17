@@ -29,7 +29,7 @@ dependencies {
 }
 
 group = 'com.beyondrelations.fs.giv'
-version = '2.0'
+version = '2.1'
 description = 'Remove deprecated jars'
 
 compileJava {
@@ -73,6 +73,13 @@ jar {
 // ¶ https://docs.gradle.org/current/userguide/application_plugin.html
 run {
 	mainClassName = 'com.beyondrelations.fs.giv.InitGiv'
+}
+
+task run_( type: JavaExec ) {
+	group = 'application'
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = 'com.beyondrelations.fs.giv.InitGiv'
+	standardInput = System.in
 }
 
 // ¶ signs jar file with keystore certificate

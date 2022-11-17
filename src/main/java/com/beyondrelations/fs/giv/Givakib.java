@@ -29,6 +29,7 @@ public class Givakib
 {
 
 	private final Logger log = LoggerFactory.getLogger( Givakib.class );
+	private final String fileExtensionToIdentify;
 	private FileSystem os;
 	private boolean verbose = false;
 
@@ -81,11 +82,14 @@ public class Givakib
 
 
 	public Givakib(
-			FileSystem ls
+			FileSystem ls, String fileExtensionToIdentify
 	) {
 		if ( ls == null )
 			throw new RuntimeException( "null filesystem is null" );
+		else if ( fileExtensionToIdentify.isEmpty() )
+			throw new RuntimeException( "which file extension ?" );
 		os = ls;
+		this.fileExtensionToIdentify = fileExtensionToIdentify;
 	}
 
 
@@ -273,7 +277,7 @@ public class Givakib
 			String[] filesWithinFolder = pAsFolderFile.list();
 			boolean foundOneJar = false;
 			for ( String filenameWithin : filesWithinFolder )
-				if ( filenameWithin.endsWith( "jar" ) )
+				if ( filenameWithin.endsWith( fileExtensionToIdentify ) )
 				{
 					foundOneJar = true;
 					break;
@@ -646,7 +650,7 @@ public class Givakib
 		) {
 			if ( verbose )
 				log.info( "handed "+ target.toString() );
-			if ( ! target.getFileName().toString().endsWith( "jar" ) )
+			if ( ! target.getFileName().toString().endsWith( fileExtensionToIdentify ) )
 				return;
 			if ( verbose )
 				log.info( "using it" );
@@ -658,7 +662,7 @@ public class Givakib
 				LocalDate modifiedD = modifiedTime.toInstant().atZone( ZoneId.systemDefault() ).toLocalDate();
 				LocalDate earlierD = createdD.compareTo( modifiedD ) < 1 ? createdD : modifiedD;
 				String tombstoneName = earlierD.toString() +"_"+ target.getFileName().toString()
-						.replace( "jar", "txt" );
+						.replace( fileExtensionToIdentify, "txt" );
 				if ( verbose )
 					log.info( "creating "+ tombstoneName );
 				Path intendedTombstone = target.getParent().resolve( os.getPath( tombstoneName ) );

@@ -26,6 +26,12 @@ public class InitGiv
 			description = "Verbose mode. Helpful for troubleshooting.")
     private boolean verbose;
 
+
+	@Option(
+			names = { "-x", "--extension" },
+			description = "Choose file extension to target.")
+    private String fileExtension = "jar";
+
 	@Parameters(
 			index = "0",
 			defaultValue = "",
@@ -56,7 +62,8 @@ public class InitGiv
 	public void run()
 	{
 		try {
-			Givakib giv = new Givakib( FileSystems.getDefault() );
+			Givakib giv = new Givakib(
+					FileSystems.getDefault(), fileExtension );
 			giv.setVerbose( verbose );
 			if ( interactive )
 				giv.interactivelyReplaceWithTombstonesIn( workingRoot );

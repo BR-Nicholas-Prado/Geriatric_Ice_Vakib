@@ -4,7 +4,7 @@
 == Delete service package
 
 * assignee : Nicholas Prado
-* status : to do
+* status : complete
 * priority : medium
 
 I copy the gzipped tar file containing the service jars for a given client to the same folder.
